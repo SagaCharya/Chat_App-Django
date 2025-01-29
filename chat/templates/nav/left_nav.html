@@ -1,36 +1,48 @@
- <!-- Left Sidebar - Chat List -->
- <div class="w-1/4 bg-white border-r">
+<!-- Left Sidebar - Chat List -->
+
+<div class="w-1/4 bg-white border-r">
     <!-- User Profile -->
     <div class="p-4 bg-gray-100 flex items-center">
-        <img class="h-10 w-10 rounded-full mr-3" src="https://via.placeholder.com/40" alt="User avatar">
-        <h2 class="font-semibold">John Doe</h2>
+      <img
+        class="h-10 w-10 rounded-full mr-3"
+        src="https://via.placeholder.com/40"
+        alt="User avatar"
+      />
+      <h2 class="font-semibold">{{ request.user.username }}</h2>
     </div>
     
-    <!-- Search Bar -->
-    <div class="p-3">
-        <input type="text" placeholder="Search or start new chat" class="w-full p-2 bg-gray-100 rounded-md">
-    </div>
-
+    <form>
+      <div class="p-3">
+        <input
+          type="text"
+          placeholder="Search or start new chat"
+          class="w-full p-2 bg-gray-100 rounded-md"
+        />
+      </div>
+    </form>
+  
     <!-- Chat List -->
     <div class="overflow-y-auto h-[calc(100vh-120px)]">
-        <!-- Repeat this block for each chat -->
-        <div class="flex items-center p-3 hover:bg-gray-100 cursor-pointer">
-            <img class="h-12 w-12 rounded-full mr-3" src="https://via.placeholder.com/48" alt="Friend's avatar">
+      {% for user in chat_users %}
+          <div class="flex items-center p-3 hover:bg-gray-100 cursor-pointer">
+            <img
+              class="h-12 w-12 rounded-full mr-3"
+              src="https://via.placeholder.com/48"
+              alt="Friend's avatar"
+            />
             <div class="flex-1">
-                <h3 class="font-semibold">Alice Johnson</h3>
-                <p class="text-sm text-gray-600 truncate">Hey, how are you doing?</p>
+              <h3 class="font-semibold">{{ user.username }}</h3>
+              <p class="text-sm text-gray-600 truncate">
+                {{ last_messages.user|truncatewords:5 }}
+              </p>
             </div>
-            <span class="text-xs text-gray-500">10:30 AM</span>
-        </div>
-        <!-- Repeat for more chats -->
-        <div class="flex items-center p-3 hover:bg-gray-100 cursor-pointer">
-            <img class="h-12 w-12 rounded-full mr-3" src="https://via.placeholder.com/48" alt="Friend's avatar">
-            <div class="flex-1">
-                <h3 class="font-semibold">Bob Smith</h3>
-                <p class="text-sm text-gray-600 truncate">Did you see the game last night?</p>
-            </div>
-            <span class="text-xs text-gray-500">Yesterday</span>
-        </div>
-        <!-- Add more chat items here -->
+            <span class="text-xs text-gray-500">
+                {{ message_times.user|date:"H:i A" }}
+            </span>
+          </div>
+      {% empty %}
+        <p class="text-gray-500 p-4">No recent chats</p>
+      {% endfor %}
     </div>
-</div>
+  </div>
+  

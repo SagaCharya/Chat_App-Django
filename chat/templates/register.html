@@ -7,11 +7,11 @@
 <body class="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-gray-800 font-sans">
     <div class="w-full max-w-md mx-auto px-6">
         <main class="text-center">
-            <h1 class="text-3xl font-semibold mb-6">Login Account</h1>
+            <h1 class="text-3xl font-semibold mb-6">Create Account</h1>
             <p class="text-lg mb-8 text-gray-600">
-                Please fill in the information below to Login.
+                Please fill in the information below to Create.
             </p>
-            <form class="space-y-4">
+            <form class="space-y-4" method="post">
                 {% csrf_token %}
                 {{ form|crispy }}
                 <button type="submit" 
