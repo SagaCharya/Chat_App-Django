@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col">
+  {% include "nav/nav.html" %}
+  <div class="flex flex-1 overflow-hidden">
+    <!-- Left Side - Navigation -->
+    {% include "nav/left_nav.html" %}
+    <!-- Right Side - Chat Window -->
+    <div class="flex-1 flex flex-col">
+      <!-- Chat Header -->
+      <div class="p-4 bg-gray-100 flex items-center border-b">
+        <img
+          class="h-10 w-10 rounded-full mr-3"
+          src="https://via.placeholder.com/40"
+          alt="Friend's avatar"
+        />
+        <h2 class="font-semibold">Alice Johnson</h2>
+      </div>
+
+      <!-- Chat Messages -->
+      <div class="flex-1 overflow-y-auto p-4 bg-whatsapp-light bg-opacity-30">
+        <!-- Received Message -->
+        <div class="flex mb-4">
+          <div class="bg-white rounded-lg p-3 max-w-xs">
+            <p class="text-sm">
+              Hey John! Are you free for a coffee this afternoon?
+            </p>
+            <span class="text-xs text-gray-500 mt-1 block">10:15 AM</span>
+          </div>
+        </div>
+
+        <!-- Sent Message -->
+        <div class="flex mb-4 justify-end">
+          <div class="bg-whatsapp-light rounded-lg p-3 max-w-xs">
+            <p class="text-sm">
+              Hi Alice! That sounds great. What time works for you?
+            </p>
+            <span class="text-xs text-gray-500 mt-1 block">10:17 AM</span>
+          </div>
+        </div>
+      </div>
+      <!-- Message Input -->
+      <div class="p-4 bg-gray-100">
+        <div class="flex items-center">
+          <input
+            type="text"
+            placeholder="Type a message"
+            class="flex-1 p-2 rounded-full mr-2"
+          />
+          <button class="bg-whatsapp text-white p-2 rounded-full">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+{% endblock %}
