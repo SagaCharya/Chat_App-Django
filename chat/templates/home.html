@@ -1,55 +1,71 @@
+
 {% extends "base.html" %}
+{% load custom_filters %}
 {% block content %}
+
 <body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col">
   {% include "nav/nav.html" %}
   <div class="flex flex-1 overflow-hidden">
     <!-- Left Side - Navigation -->
-    {% include "nav/left_nav.html" %}
-    <!-- Right Side - Chat Window -->
-    <div class="flex-1 flex flex-col" >
-      <!-- Chat Header -->
-      <div class="p-4 bg-gray-100 flex items-center border-b">
+    <div class="w-1/4 bg-white border-r">
+      <!-- User Profile -->
+      <div class="p-4 bg-gray-100 flex items-center">
         <img
           class="h-10 w-10 rounded-full mr-3"
           src="https://via.placeholder.com/40"
-          alt="Friend's avatar"
+          alt="User avatar"
         />
-        <h2 class="font-semibold">Alice Johnson</h2>
+        <h2 class="font-semibold">{{ request.user.username }}</h2>
       </div>
-
-      <!-- Chat Messages -->
-      <div class="flex-1 overflow-y-auto p-4 bg-whatsapp-light bg-opacity-30">
-        <!-- Received Message -->
-        <div class="flex mb-4">
-          <div class="bg-white rounded-lg p-3 max-w-xs">
-            <p class="text-sm">
-              Hey John! Are you free for a coffee this afternoon?
-            </p>
-            <span class="text-xs text-gray-500 mt-1 block">10:15 AM</span>
-          </div>
-        </div>
-
-        <!-- Sent Message -->
-        <div class="flex mb-4 justify-end">
-          <div class="bg-whatsapp-light rounded-lg p-3 max-w-xs">
-            <p class="text-sm">
-              Hi Alice! That sounds great. What time works for you?
-            </p>
-            <span class="text-xs text-gray-500 mt-1 block">10:17 AM</span>
-          </div>
-        </div>
-      </div>
-      <!-- Message Input -->
-      <div class="p-4 bg-gray-100">
-        <div class="flex items-center">
+      
+      <form>
+        <div class="p-3">
           <input
             type="text"
-            placeholder="Type a message"
-            class="flex-1 p-2 rounded-full mr-2"
+            placeholder="Search or start new chat"
+            class="w-full p-2 bg-gray-100 rounded-md"
           />
-          <button class="bg-whatsapp text-white p-2 rounded-full">Send</button>
         </div>
+      </form>
+    
+      <!-- Chat List -->
+      <div class="overflow-y-auto h-[calc(100vh-120px)]">
+        {% for user in chat_users %}
+            <div class="flex items-center p-3 hover:bg-gray-100 cursor-pointer"
+            hx-get="{% url 'chat_detail' user.id %}" 
+            hx-target="#chat-window" 
+            hx-push-url="true"
+            >
+              <img
+                class="h-12 w-12 rounded-full mr-3"
+                src="https://via.placeholder.com/48"
+                alt="Friend's avatar"
+              />
+              <div class="flex-1">
+                <h3 class="font-semibold">{{ user.username }}</h3>
+                <p class="text-sm text-gray-600 truncate">
+                  {{ last_messages|get_item:user|truncatewords:5 }}
+                </p>
+              </div>
+              <span class="text-xs text-gray-500">
+                {{ message_times|get_item:user|date:"H:i A" }}
+                  
+              </span>
+            </div>
+        {% empty %}
+          <p class="text-gray-500 p-4">No recent chats</p>
+        {% endfor %}
       </div>
+    </div>
+    <!-- Right Side - Chat Window -->
+    <div class="flex-1 flex flex-col" >
+      <!-- Chat Header -->
+  
+      <!-- Chat Messages -->
+      <div id="chat-window" class="flex-1 overflow-y-auto p-4 bg-whatsapp-light bg-opacity-30">
+       
+    
+     
     </div>
   </div>
 </body>

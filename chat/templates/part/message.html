@@ -1,0 +1,19 @@
+{% if message.sender == request.user %}
+<div class="flex mb-4 justify-end">
+  <div class="bg-whatsapp-light rounded-lg p-3 max-w-xs">
+    <p class="text-sm">{{ message.content }}</p>
+    <span class="text-xs text-gray-500 mt-1 block"
+      >{{ message.timestamp|date:"H:i A" }}</span
+    >
+  </div>
+</div>
+{% else %}
+<div class="flex mb-4">
+  <div class="bg-white rounded-lg p-3 max-w-xs">
+    <p class="text-sm">{{ message.content }}</p>
+    <span class="text-xs text-gray-500 mt-1 block"
+      >{{ message.timestamp|date:"H:i A" }}</span
+    >
+  </div>
+</div>
+{% endif %}

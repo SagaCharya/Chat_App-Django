@@ -1,4 +1,4 @@
-<body class="min-h-screen bg-gray-100">
+
     <!-- Top Sidebar -->
     <nav class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -9,7 +9,13 @@
                     </div>
                 </div>
                 
+                
                 <div class="flex items-center space-x-4">
+                    <a href="{% url "home" %}">
+                        <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900">
+                            Messages
+                        </button>
+                    </a>
                     <a href="{% url "friends" %}">
                     <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900" onclick="showFriends()">
                         Friends
@@ -20,10 +26,6 @@
                         Requests
                     </button>
                 </a>
-                
-                    <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900">
-                        Notifications
-                    </button>
                     <a href="{% url "logout" %}">
                     <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900">
                         Logout

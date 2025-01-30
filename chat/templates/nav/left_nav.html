@@ -1,4 +1,5 @@
 <!-- Left Sidebar - Chat List -->
+{% load custom_filters %}
 
 <div class="w-1/4 bg-white border-r">
     <!-- User Profile -->
@@ -33,11 +34,11 @@
             <div class="flex-1">
               <h3 class="font-semibold">{{ user.username }}</h3>
               <p class="text-sm text-gray-600 truncate">
-                {{ last_messages.user|truncatewords:5 }}
+                {{ last_messages|get_item:user|truncatewords:5 }}
               </p>
             </div>
             <span class="text-xs text-gray-500">
-                {{ message_times.user|date:"H:i A" }}
+                {{ message_times|get_item:user|date:"H:i A" }}
             </span>
           </div>
       {% empty %}

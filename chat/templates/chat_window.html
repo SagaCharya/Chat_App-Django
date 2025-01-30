@@ -1,0 +1,147 @@
+<div id="chat-window" class="flex-1 flex flex-col h-screen">
+  <!-- Chat Header -->
+  <div class="p-4 bg-gray-100 flex items-center border-b">
+    <img
+      class="h-10 w-10 rounded-full mr-3"
+      src="https://via.placeholder.com/40"
+      alt="Friend's avatar"
+    />
+    <h2 class="font-semibold">{{ chat_user.username }}</h2>
+  </div>
+
+  <!-- Chat Messages (Scrollable) -->
+  <div
+    id="messages-container"
+    class="flex-1 min-h-0 overflow-y-auto p-4 bg-whatsapp-light bg-opacity-30"
+  >
+    {% for message in messages %} {% if message.sender == request.user %}
+
+    <div class="flex mb-4 justify-end">
+      <div class="bg-whatsapp-light rounded-lg p-3 max-w-xs">
+        <p class="text-sm">{{ message.content }}</p>
+        <span class="text-xs text-gray-500 mt-1 block"
+          >{{ message.timestamp|date:"H:i A" }}</span
+        >
+      </div>
+    </div>
+    {% else %}
+    <div class="flex mb-4">
+      <div class="bg-white rounded-lg p-3 max-w-xs">
+        <p class="text-sm">{{ message.content }}</p>
+        <span class="text-xs text-gray-500 mt-1 block"
+          >{{ message.timestamp|date:"H:i A" }}</span
+        >
+      </div>
+    </div>
+    {% endif %} {% endfor %}
+  </div>
+
+
+  <!-- Message Input (Fixed at Bottom) -->
+  <div class="p-4 bg-gray-100 sticky bottom-0">
+    <form
+      hx-post="{% url 'send_message' chat_user.id %}"
+      hx-target="#messages-container"
+      hx-swap="beforeend"
+      id='chat-form'
+    >
+      {% csrf_token %}
+      <div class="flex items-center">
+        <input
+          id="message-input"
+          type="text"
+          name="message"
+          placeholder="Type a message"
+          class="flex-1 p-2 rounded-full mr-2"
+        />
+        <button
+          id="send-button"
+          type="submit"
+          class="bg-whatsapp text-white p-2 rounded-full"
+        >
+          Send
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let senderId = "{{ request.user.id }}";
+  let receiverId = "{{ chat_user.id }}";
+  let socket = new WebSocket(
+    `ws://${window.location.host}/ws/chat_room/${senderId}/${receiverId}/`
+  );
+
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+    const messagesContainer = document.querySelector("#messages-container");
+    if (messagesContainer) {
+    messagesContainer.scrollBottom = messagesContainer.scrollHeight;
+}
+}, 50);
+
+    const chatForm = document.querySelector("#chat-form");
+    const messageInput = document.querySelector("#message-input");
+  
+    if (chatForm && messageInput) {
+      chatForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        messageInput.value = "";  // Clear input after sending
+      });
+    } else {
+      console.error("Form or input not found!");
+    }
+  });
+
+  socket.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    console.log("Message received:", data.message);
+
+    const messageContainer = document.createElement("div");
+    messageContainer.classList.add("flex", "mb-4");
+
+    if (data.sender_id === '{{ request.user.id }}') {
+        messageContainer.classList.add("justify-end");
+    }
+
+
+    const messageContent = document.createElement("div");
+    messageContent.classList.add(data.sender === '{{ request.user.id}}' ? "bg-whatsapp-light" : "bg-white", "rounded-lg", "p-3", "max-w-xs");
+
+    const messageText = document.createElement("p");
+    messageText.classList.add("text-sm");
+    messageText.innerText = data.message;
+
+    const timestamp = document.createElement("span");
+    timestamp.classList.add("text-xs", "text-gray-500", "mt-1", "block");
+    timestamp.innerText = data.timestamp;
+
+    messageContent.appendChild(messageText);
+    messageContent.appendChild(timestamp);
+    messageContainer.appendChild(messageContent);
+
+    // Add the new message to the message container
+    const messagesContainer = document.querySelector("#messages-container");
+  messagesContainer.appendChild(messageContainer);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+};
+
+// Clear input after HTMX submission
+document.addEventListener("htmx:afterRequest", function(event) {
+  if (event.detail.successful && event.detail.requestConfig.path.includes("send_message")) {
+    document.getElementById("message-input").value = "";
+  }
+});
+
+// Scroll after HTMX appends a message
+document.addEventListener("htmx:afterSwap", function(event) {
+  if (event.detail.target.id === "messages-container") {
+    const messagesContainer = document.getElementById("messages-container");
+    messagesContainer.scrollBottom = messagesContainer.scrollHeight;
+  });
+</script>
