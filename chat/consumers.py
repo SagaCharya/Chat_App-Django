@@ -31,30 +31,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        print(f"User {self.current_user.id} disconnected")
 
 
 
 
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        try:
+            text_data_json = json.loads(text_data)
+            message = text_data_json['message']
 
-        # Save message to database
-        new_message = await self.save_message(
-            sender_id=self.current_user.id,
-            receiver_id=self.receiver_id,
-            message=message
-        )
+            # Save message to database
+            new_message = await self.save_message(
+                sender_id=self.current_user.id,
+                receiver_id=self.receiver_id,
+                message=message
+            )
 
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message,
-                'sender': self.current_user.id,
-                'timestamp': new_message.timestamp.strftime("%H:%M %p"),
-            }
-        )
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                    'sender_id': self.current_user.id,
+                    'timestamp': new_message.timestamp.strftime("%H:%M %p"),
+                }
+            )
+        except Exception as e:
+            print(f"Error: {e}")
+            await self.send(text_data=json.dumps({
+                'error': 'Failed to process the message.'
+            }))
 
     @sync_to_async
     def save_message(self, sender_id, receiver_id, message):
@@ -71,7 +78,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
             'message': event['message'],
-            'sender': event['sender'],
             'sender_id': event['sender_id'],
             'timestamp': event['timestamp']
         }))

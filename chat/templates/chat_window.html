@@ -1,3 +1,8 @@
+
+{% extends "base.html" %}
+{% load custom_filters %}
+{% block content %}
+
 <div id="chat-window" class="flex-1 flex flex-col h-screen">
   <!-- Chat Header -->
   <div class="p-4 bg-gray-100 flex items-center border-b">
@@ -36,15 +41,9 @@
     {% endif %} {% endfor %}
   </div>
 
-
   <!-- Message Input (Fixed at Bottom) -->
   <div class="p-4 bg-gray-100 sticky bottom-0">
-    <form
-      hx-post="{% url 'send_message' chat_user.id %}"
-      hx-target="#messages-container"
-      hx-swap="beforeend"
-      id='chat-form'
-    >
+    <form id="chat-form">
       {% csrf_token %}
       <div class="flex items-center">
         <input
@@ -67,81 +66,86 @@
 </div>
 
 <script>
-  let senderId = "{{ request.user.id }}";
-  let receiverId = "{{ chat_user.id }}";
-  let socket = new WebSocket(
-    `ws://${window.location.host}/ws/chat_room/${senderId}/${receiverId}/`
-  );
+  (function() {
+    const senderId = "{{ request.user.id }}";
+    const receiverId = "{{ chat_user.id }}";
+    
+    // Create new WebSocket instance
+    const socket = new WebSocket(
+      `ws://${window.location.host}/ws/chat_room/${senderId}/${receiverId}/`
+    );
 
-  if ('scrollRestoration' in history) {
-    history.scrollRestoration = 'manual';
-  }
+    // Expose socket to parent
+    document.currentScript.parentElement.socket = socket;
 
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-    const messagesContainer = document.querySelector("#messages-container");
-    if (messagesContainer) {
-    messagesContainer.scrollBottom = messagesContainer.scrollHeight;
-}
-}, 50);
+    // WebSocket event handlers
+    socket.onmessage = function(e) {
+      const data = JSON.parse(e.data);
+      console.log("Message received:", data);
 
-    const chatForm = document.querySelector("#chat-form");
-    const messageInput = document.querySelector("#message-input");
-  
-    if (chatForm && messageInput) {
-      chatForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        messageInput.value = "";  // Clear input after sending
-      });
-    } else {
-      console.error("Form or input not found!");
-    }
-  });
+      // Create message container
+      const messageContainer = document.createElement("div");
+      messageContainer.classList.add("flex", "mb-4");
 
-  socket.onmessage = (e) => {
-    const data = JSON.parse(e.data);
-    console.log("Message received:", data.message);
-
-    const messageContainer = document.createElement("div");
-    messageContainer.classList.add("flex", "mb-4");
-
-    if (data.sender_id === '{{ request.user.id }}') {
+      // Align message to the right if sent by the current user
+      if (data.sender_id == senderId) {
         messageContainer.classList.add("justify-end");
-    }
+      }
 
+      // Create message content
+      const messageContent = document.createElement("div");
+      messageContent.classList.add(
+        data.sender_id == senderId ? "bg-whatsapp-light" : "bg-white",
+        "rounded-lg",
+        "p-3",
+        "max-w-xs"
+      );
 
-    const messageContent = document.createElement("div");
-    messageContent.classList.add(data.sender === '{{ request.user.id}}' ? "bg-whatsapp-light" : "bg-white", "rounded-lg", "p-3", "max-w-xs");
+      // Add message text
+      const messageText = document.createElement("p");
+      messageText.classList.add("text-sm");
+      messageText.innerText = data.message;
 
-    const messageText = document.createElement("p");
-    messageText.classList.add("text-sm");
-    messageText.innerText = data.message;
+      // Add timestamp
+      const timestamp = document.createElement("span");
+      timestamp.classList.add("text-xs", "text-gray-500", "mt-1", "block");
+      timestamp.innerText = data.timestamp;
 
-    const timestamp = document.createElement("span");
-    timestamp.classList.add("text-xs", "text-gray-500", "mt-1", "block");
-    timestamp.innerText = data.timestamp;
+      // Append elements
+      messageContent.appendChild(messageText);
+      messageContent.appendChild(timestamp);
+      messageContainer.appendChild(messageContent);
 
-    messageContent.appendChild(messageText);
-    messageContent.appendChild(timestamp);
-    messageContainer.appendChild(messageContent);
+      // Add the message to the messages container
+      const messagesContainer = document.getElementById("messages-container");
+      messagesContainer.appendChild(messageContainer);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
 
-    // Add the new message to the message container
-    const messagesContainer = document.querySelector("#messages-container");
-  messagesContainer.appendChild(messageContainer);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-};
+    socket.onclose = function() {
+      console.log("WebSocket connection closed");
+    };
 
-// Clear input after HTMX submission
-document.addEventListener("htmx:afterRequest", function(event) {
-  if (event.detail.successful && event.detail.requestConfig.path.includes("send_message")) {
-    document.getElementById("message-input").value = "";
-  }
-});
+    // Form submission handler
+    document.getElementById("chat-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const messageInput = document.getElementById("message-input");
+      const message = messageInput.value.trim();
 
-// Scroll after HTMX appends a message
-document.addEventListener("htmx:afterSwap", function(event) {
-  if (event.detail.target.id === "messages-container") {
+      if (message) {
+        socket.send(JSON.stringify({
+          message: message,
+          sender_id: senderId,
+          receiver_id: receiverId,
+        }));
+        messageInput.value = "";
+      }
+    });
+
     const messagesContainer = document.getElementById("messages-container");
-    messagesContainer.scrollBottom = messagesContainer.scrollHeight;
-  });
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  })();
 </script>
+{% endblock %}

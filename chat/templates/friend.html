@@ -46,9 +46,11 @@
                                             </div>
                                         </div>
                                         <div class="ml-5 flex-shrink-0">
+                                            <a href="{% url "chat_detail" friend.id %}">
                                             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                                 Message
                                             </button>
+                                        </a>
                                             <a href="{% url "remove_friend" friend.pk %}">
                                             <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                                 Remove

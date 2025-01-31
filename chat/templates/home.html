@@ -33,7 +33,7 @@
         {% for user in chat_users %}
             <div class="flex items-center p-3 hover:bg-gray-100 cursor-pointer"
             hx-get="{% url 'chat_detail' user.id %}" 
-            hx-target="#chat-window" 
+            hx-target="#chat-container" 
             hx-push-url="true"
             >
               <img
@@ -57,16 +57,34 @@
         {% endfor %}
       </div>
     </div>
-    <!-- Right Side - Chat Window -->
-    <div class="flex-1 flex flex-col" >
-      <!-- Chat Header -->
-  
-      <!-- Chat Messages -->
-      <div id="chat-window" class="flex-1 overflow-y-auto p-4 bg-whatsapp-light bg-opacity-30">
+
+    
+    <div class="flex-1 flex flex-col">
+      <div id="chat-container" class="flex-1">
+        {% include "chat_window.html" %}  <!-- Initial empty state -->
+      </div>
+    </div>
        
     
      
     </div>
   </div>
 </body>
+<script>
+  // Global WebSocket reference
+  let activeSocket = null;
+
+  // HTMX afterSwap handler
+  document.addEventListener("htmx:afterSwap", function(event) {
+    if (event.detail.target.id === "chat-container") {
+      // Clean up previous WebSocket connection
+      if (activeSocket && activeSocket.readyState === WebSocket.OPEN) {
+        activeSocket.close();
+      }
+      
+      // Get the new socket instance from the loaded partial
+      activeSocket = document.querySelector("#chat-window").socket;
+    }
+  });
+</script>
 {% endblock %}

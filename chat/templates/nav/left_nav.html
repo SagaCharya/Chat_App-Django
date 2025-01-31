@@ -1,5 +1,7 @@
 <!-- Left Sidebar - Chat List -->
+{% extends "base.html" %}
 {% load custom_filters %}
+{% block content %}
 
 <div class="w-1/4 bg-white border-r">
     <!-- User Profile -->
@@ -25,7 +27,11 @@
     <!-- Chat List -->
     <div class="overflow-y-auto h-[calc(100vh-120px)]">
       {% for user in chat_users %}
-          <div class="flex items-center p-3 hover:bg-gray-100 cursor-pointer">
+          <div class="flex items-center p-3 hover:bg-gray-100 cursor-pointer"
+          hx-get="{% url 'chat_detail' user.id %}" 
+          hx-target="#chat-container" 
+          hx-push-url="true"
+          >
             <img
               class="h-12 w-12 rounded-full mr-3"
               src="https://via.placeholder.com/48"
@@ -38,7 +44,8 @@
               </p>
             </div>
             <span class="text-xs text-gray-500">
-                {{ message_times|get_item:user|date:"H:i A" }}
+              {{ message_times|get_item:user|date:"H:i A" }}
+                
             </span>
           </div>
       {% empty %}
@@ -46,4 +53,6 @@
       {% endfor %}
     </div>
   </div>
+
+  {% endblock%}
   
