@@ -1,18 +1,20 @@
 <!-- Left Sidebar - Chat List -->
-{% extends "base.html" %}
+
 {% load custom_filters %}
-{% block content %}
+
 
 <div class="w-1/4 bg-white border-r">
     <!-- User Profile -->
+     <a href="{% url "user_profile" %}">
     <div class="p-4 bg-gray-100 flex items-center">
       <img
         class="h-10 w-10 rounded-full mr-3"
-        src="https://via.placeholder.com/40"
+        src="{{request.user.profile.profile_pic.url}}"
         alt="User avatar"
       />
       <h2 class="font-semibold">{{ request.user.username }}</h2>
     </div>
+  </a>
     
     <form>
       <div class="p-3">
@@ -34,7 +36,7 @@
           >
             <img
               class="h-12 w-12 rounded-full mr-3"
-              src="https://via.placeholder.com/48"
+              src="{{user.profile.profile_pic.url}}"
               alt="Friend's avatar"
             />
             <div class="flex-1">
@@ -54,5 +56,5 @@
     </div>
   </div>
 
-  {% endblock%}
+
   

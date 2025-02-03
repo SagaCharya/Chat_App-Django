@@ -15,6 +15,7 @@ urlpatterns = [
     path('search_users/', views.search_users, name='search_users'),
     path('send_friend_request/<int:user_id>/', views.send_friend_request, name='send_friend_request'),
     path('chat_detail/<int:user_id>/', views.chat_detail, name='chat_detail'),
-    path('send_message/<int:user_id>/', views.send_message, name='send_message'),
+    path('profile/',views.profile, name='profile'),
+    path('user_profile/',views.user_profile , name='user_profile' ),
 ]
 

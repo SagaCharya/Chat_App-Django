@@ -1,14 +1,15 @@
 
-{% extends "base.html" %}
 {% load custom_filters %}
 {% block content %}
 
+
 <div id="chat-window" class="flex-1 flex flex-col h-screen">
   <!-- Chat Header -->
+   {% if chat_user %}{% endif %}
   <div class="p-4 bg-gray-100 flex items-center border-b">
     <img
       class="h-10 w-10 rounded-full mr-3"
-      src="https://via.placeholder.com/40"
+      src="{{chat_user.profile.profile_pic.url}}"
       alt="Friend's avatar"
     />
     <h2 class="font-semibold">{{ chat_user.username }}</h2>

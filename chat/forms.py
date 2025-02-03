@@ -1,6 +1,8 @@
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+from .models import CustomUser, UserProfile
 from django import forms
+from django.forms import ModelForm
+
 
 
 class RegisterForm(UserCreationForm):
@@ -15,5 +17,11 @@ class RegisterForm(UserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField(required=True, widget=forms.TextInput(attrs={'class': 'form-input'}))
     password = forms.CharField(required=True, widget=forms.PasswordInput(attrs={'class': 'form-input'}))
+
+class ProfileForm(ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ["profile_pic", "bio"]
+
     
     

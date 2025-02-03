@@ -34,10 +34,11 @@ class CustomUser(AbstractUser):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(blank=True)
-    profile_pic = models.ImageField(upload_to='profile_pics', blank=True)
+    profile_pic = models.ImageField(upload_to='profile_pics/', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_active= models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username

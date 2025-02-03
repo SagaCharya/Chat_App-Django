@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-100 flex flex-col">
-    {% include "nav/nav.html" %}
+<div class="min-h-screen bg-gray-100 flex flex-col ">
+
 
     <div class="flex flex-1">
         {% include "nav/left_nav.html" %}
 
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-6">
-
-            <form hx-get="{% url 'search_users' %}" hx-target="#swapmain" hx-swap="outerHTML" hx-trigger="submit">
+        <main class="flex-1 overflow-y-auto p-6" >
+        <div id="chat-container">
+            <form hx-get="{% url 'search_users' %}" hx-target="#swap-item" hx-swap="outerHTML" hx-trigger="submit">
                 <div class="p-3 flex items-center">
                     <input type="text" placeholder="Search Users" name="q" class="w-2/3 p-2 m-3 bg-gray-100 rounded-md border border-black">
                     <a href="{% url 'search_users' %}">
@@ -23,7 +23,7 @@
                     
                 </div>
             </form>
-            <div class="max-w-7xl mx-auto" id="swapmain">
+            <div class="max-w-7xl mx-auto" id="swap-item">
                 <h1 class="text-2xl font-semibold mb-6">
                     Your Friends
             </h1>
@@ -32,12 +32,11 @@
                     <div class="bg-white shadow overflow-hidden sm:rounded-md">
                         <ul class="divide-y divide-gray-200">
                             {% for friend in friends %}
-                            {{friend}}
                                 <li>
                                     <div class="px-4 py-4 flex items-center sm:px-6">
                                         <div class="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
                                             <div class="flex items-center">
-                                                <img class="h-12 w-12 rounded-full" src="" alt="{{ friend.username }}">
+                                                <img class="h-12 w-12 rounded-full" src="{{friend.profile.profile_pic.url}}" alt="{{ friend.username }}">
                                                 <div class="ml-4">
                                                     <p class="font-medium text-gray-900">{{ friend.username }}</p>
                                                     <p class="text-sm text-gray-500">{{ friend.email }}</p>
@@ -74,4 +73,6 @@
         </main>
     </div>
 </div>
+</div>
+
 {% endblock %}
