@@ -40,9 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'chat',
-
-
-
+    'user',
     "crispy_forms",
     "crispy_tailwind",
 ]
@@ -147,11 +145,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Custom user model
-AUTH_USER_MODEL = 'chat.CustomUser'
+AUTH_USER_MODEL = 'user.CustomUser'
+LOGIN_URL = "/login/"
+
+
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 
 CRISPY_TEMPLATE_PACK = "tailwind"
+# settings.py
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  
+EMAIL_HOST = 'smtp.gmail.com'  
+EMAIL_PORT = 587 
+EMAIL_USE_TLS = True  
+EMAIL_HOST_USER = 'sagacharya88@gmail.com'  # Your Gmail address
+EMAIL_HOST_PASSWORD = ''
 
 

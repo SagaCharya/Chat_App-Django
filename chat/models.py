@@ -2,35 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from user.models import CustomUser
 
-
-# Create your models here.
-class CustomUser(AbstractUser):
-    friends = models.ManyToManyField('self', blank=True, symmetrical=False)
-
-    def send_friend_request(self, to_user):
-        """Send a friend request if one doesn't already exist."""
-        
-
-    def accept_friend_request(self, from_user):
-        """Accept a friend request and add to the friends list."""
-        try:
-            request = FriendRequest.objects.get(from_user=from_user, to_user=self)
-            request.accepted = True
-            request.save()
-            self.friends.add(from_user)  # Add mutual friendship
-            from_user.friends.add(self)  # Ensure both users are friends
-        except FriendRequest.DoesNotExist:
-            pass
-    
-    def remove_friend(self, friend):
-        """Remove a friend from the friends list."""
-        if friend in self.friends.all():
-            self.friends.remove(friend)
-            friend.friends.remove(self)  # Remove mutual friendship
-
-    def __str__(self):
-        return self.username
 
 
 class UserProfile(models.Model):

@@ -1,16 +1,15 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
-from .forms import RegisterForm, LoginForm, ProfileForm
+from .forms import ProfileForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import FriendRequest, CustomUser, Message
+from .models import FriendRequest,  Message
 from django.db.models import Q, OuterRef, Subquery
+from user.models import CustomUser
 
 
 
-def index(request):
-    
-    return render(request, 'index.html')
+
 
 
 def home(request):
@@ -19,29 +18,9 @@ def home(request):
     else:
         return render(request, 'home.html')
 
-def user_register(request):
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('login')
-    else:
+
         form = RegisterForm()
     return render(request, 'register.html', {'form': form})
-
-def user_login(request):
-    if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            username = request.POST['username']
-            password = request.POST['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('home')
-    else:
-        form = LoginForm()
-    return render(request, 'login.html', {'form': form})
 
 @login_required
 def profile(request):
@@ -63,12 +42,6 @@ def user_profile(request):
     return render(request, 'user_profile.html', {'user':user})
 
 
-
-
-
-def user_logout(request):
-    logout(request)
-    return redirect('index')
 
 
 @login_required
