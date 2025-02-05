@@ -161,7 +161,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587 
 EMAIL_USE_TLS = True  
 EMAIL_HOST_USER = 'sagacharya88@gmail.com'  # Your Gmail address
-EMAIL_HOST_PASSWORD = 'bril ljwr ioxp kvwk'
+EMAIL_HOST_PASSWORD = ''
 
 
 # CELERY settings
