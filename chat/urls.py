@@ -13,5 +13,6 @@ urlpatterns = [
     path('chat_detail/<int:user_id>/', views.chat_detail, name='chat_detail'),
     path('profile/',views.profile, name='profile'),
     path('user_profile/',views.user_profile , name='user_profile' ),
+    path('change_password/',views.change_password_btn, name='change_password')
 ]
 

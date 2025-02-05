@@ -1,3 +1,5 @@
+from datetime import timedelta
+from django.utils import timezone
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from .forms import ProfileForm
@@ -6,10 +8,37 @@ from django.contrib.auth.decorators import login_required
 from .models import FriendRequest,  Message
 from django.db.models import Q, OuterRef, Subquery
 from user.models import CustomUser
+from user.tasks import send_password_change_email
+import uuid
+from django.core.exceptions import ObjectDoesNotExist
 
 
 
 
+@login_required
+def change_password_btn(request):
+    try:
+        # Get the logged-in user
+        user = request.user
+        print(user)
+        # Generate a unique verification token
+        user.verification_token = uuid.uuid4().hex
+        user.token_created_at = timezone.now()
+        user.save()
+
+        # Create the verification link
+        verification_link = f"http://127.0.0.1:8000/password_change/{user.verification_token}/"
+
+        # Send the password change email via Celery
+        send_password_change_email.delay(user.email, verification_link)
+
+        # Render the success page
+        return render(request, 'pass.html')
+
+    except Exception as e:
+        print(e)
+        return redirect('user_profile')
+    
 
 
 def home(request):
