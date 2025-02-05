@@ -1,0 +1,152 @@
+
+{% load custom_filters %}
+{% block content %}
+
+
+<div id="chat-window" class="flex-1 flex flex-col h-screen">
+  <!-- Chat Header -->
+   {% if chat_user %}{% endif %}
+  <div class="p-4 bg-gray-100 flex items-center border-b">
+    <img
+      class="h-10 w-10 rounded-full mr-3"
+      src="{{chat_user.profile.profile_pic.url}}"
+      alt="Friend's avatar"
+    />
+    <h2 class="font-semibold">{{ chat_user.username }}</h2>
+  </div>
+
+  <!-- Chat Messages (Scrollable) -->
+  <div
+    id="messages-container"
+    class="flex-1 min-h-0 overflow-y-auto p-4 bg-whatsapp-light bg-opacity-30"
+  >
+    {% for message in messages %} {% if message.sender == request.user %}
+
+    <div class="flex mb-4 justify-end">
+      <div class="bg-whatsapp-light rounded-lg p-3 max-w-xs">
+        <p class="text-sm">{{ message.content }}</p>
+        <span class="text-xs text-gray-500 mt-1 block"
+          >{{ message.timestamp|date:"H:i A" }}</span
+        >
+      </div>
+    </div>
+    {% else %}
+    <div class="flex mb-4">
+      <div class="bg-white rounded-lg p-3 max-w-xs">
+        <p class="text-sm">{{ message.content }}</p>
+        <span class="text-xs text-gray-500 mt-1 block"
+          >{{ message.timestamp|date:"H:i A" }}</span
+        >
+      </div>
+    </div>
+    {% endif %} {% endfor %}
+  </div>
+
+  <!-- Message Input (Fixed at Bottom) -->
+  <div class="p-4 bg-gray-100 sticky bottom-0">
+    <form id="chat-form">
+      {% csrf_token %}
+      <div class="flex items-center">
+        <input
+          id="message-input"
+          type="text"
+          name="message"
+          placeholder="Type a message"
+          class="flex-1 p-2 rounded-full mr-2"
+        />
+        <button
+          id="send-button"
+          type="submit"
+          class="bg-whatsapp text-white p-2 rounded-full"
+        >
+          Send
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const senderId = "{{ request.user.id }}";
+    const receiverId = "{{ chat_user.id }}";
+    
+    // Create new WebSocket instance
+    const socket = new WebSocket(
+      `ws://${window.location.host}/ws/chat_room/${senderId}/${receiverId}/`
+    );
+
+    // Expose socket to parent
+    document.currentScript.parentElement.socket = socket;
+
+    // WebSocket event handlers
+    socket.onmessage = function(e) {
+      const data = JSON.parse(e.data);
+      console.log("Message received:", data);
+
+      // Create message container
+      const messageContainer = document.createElement("div");
+      messageContainer.classList.add("flex", "mb-4");
+
+      // Align message to the right if sent by the current user
+      if (data.sender_id == senderId) {
+        messageContainer.classList.add("justify-end");
+      }
+
+      // Create message content
+      const messageContent = document.createElement("div");
+      messageContent.classList.add(
+        data.sender_id == senderId ? "bg-whatsapp-light" : "bg-white",
+        "rounded-lg",
+        "p-3",
+        "max-w-xs"
+      );
+
+      // Add message text
+      const messageText = document.createElement("p");
+      messageText.classList.add("text-sm");
+      messageText.innerText = data.message;
+
+      // Add timestamp
+      const timestamp = document.createElement("span");
+      timestamp.classList.add("text-xs", "text-gray-500", "mt-1", "block");
+      timestamp.innerText = data.timestamp;
+
+      // Append elements
+      messageContent.appendChild(messageText);
+      messageContent.appendChild(timestamp);
+      messageContainer.appendChild(messageContent);
+
+      // Add the message to the messages container
+      const messagesContainer = document.getElementById("messages-container");
+      messagesContainer.appendChild(messageContainer);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
+
+    socket.onclose = function() {
+      console.log("WebSocket connection closed");
+    };
+
+    // Form submission handler
+    document.getElementById("chat-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const messageInput = document.getElementById("message-input");
+      const message = messageInput.value.trim();
+
+      if (message) {
+        socket.send(JSON.stringify({
+          message: message,
+          sender_id: senderId,
+          receiver_id: receiverId,
+        }));
+        messageInput.value = "";
+      }
+    });
+
+    const messagesContainer = document.getElementById("messages-container");
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  })();
+</script>
+{% endblock %}

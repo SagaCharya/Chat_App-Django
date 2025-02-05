@@ -1,0 +1,41 @@
+
+{% extends "base.html" %}
+{% load custom_filters %}
+{% block content %}
+
+<body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col"> 
+  <div class="flex flex-1 overflow-hidden">
+  {% include "nav/left_nav.html" %}
+ 
+
+
+    
+    <div class="flex-1 flex flex-col">
+      <div id="chat-container" class="flex-1">
+        {% include "chat_window.html" %}  <!-- Initial empty state -->
+      </div>
+    </div>
+       
+    
+     
+    </div>
+  </div>
+</body>
+<script>
+  // Global WebSocket reference
+  let activeSocket = null;
+
+  // HTMX afterSwap handler
+  document.addEventListener("htmx:afterSwap", function(event) {
+    if (event.detail.target.id === "chat-container") {
+      // Clean up previous WebSocket connection
+      if (activeSocket && activeSocket.readyState === WebSocket.OPEN) {
+        activeSocket.close();
+      }
+      
+      // Get the new socket instance from the loaded partial
+      activeSocket = document.querySelector("#chat-window").socket;
+    }
+  });
+</script>
+{% endblock %}

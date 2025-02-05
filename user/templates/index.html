@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-gray-800 font-sans">
+    <div class="w-full max-w-md mx-auto px-6">
+        <main class="text-center">
+            <h1 class="text-3xl font-semibold mb-6">Welcome</h1>
+            <p class="text-lg mb-10 text-gray-600">
+                Please sign in or create an account to continue.
+            </p>
+            <div class="space-y-4">
+                <a href="{% url "login" %}" class="block w-full px-4 py-2 text-center text-gray-800 bg-white border border-gray-300 rounded hover:bg-gray-100 transition duration-200">
+                    Sign In
+                </a>
+                <a href="{% url "register" %}" class="block w-full px-4 py-2 text-center text-white bg-gray-800 rounded hover:bg-gray-700 transition duration-200">
+                    Create Account
+                </a>
+            </div>
+        </main>
+    </div>

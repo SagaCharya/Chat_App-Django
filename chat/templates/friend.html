@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 flex flex-col ">
+
+
+    <div class="flex flex-1">
+        {% include "nav/left_nav.html" %}
+
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-6" >
+        <div id="chat-container">
+            <form hx-get="{% url 'search_users' %}" hx-target="#swap-item" hx-swap="outerHTML" hx-trigger="submit">
+                <div class="p-3 flex items-center">
+                    <input type="text" placeholder="Search Users" name="q" class="w-2/3 p-2 m-3 bg-gray-100 rounded-md border border-black">
+                    <a href="{% url 'search_users' %}">
+                    <button type='submit' class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Search
+                    </button>
+                </a>
+
+                    
+                </div>
+            </form>
+            <div class="max-w-7xl mx-auto" id="swap-item">
+                <h1 class="text-2xl font-semibold mb-6">
+                    Your Friends
+            </h1>
+                <!-- Friends List -->
+                 {% if friends %}
+                    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+                        <ul class="divide-y divide-gray-200">
+                            {% for friend in friends %}
+                                <li>
+                                    <div class="px-4 py-4 flex items-center sm:px-6">
+                                        <div class="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
+                                            <div class="flex items-center">
+                                                <img class="h-12 w-12 rounded-full" src="{{friend.profile.profile_pic.url}}" alt="{{ friend.username }}">
+                                                <div class="ml-4">
+                                                    <p class="font-medium text-gray-900">{{ friend.username }}</p>
+                                                    <p class="text-sm text-gray-500">{{ friend.email }}</p>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ml-5 flex-shrink-0">
+                                            <a href="{% url "chat_detail" friend.id %}">
+                                            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                Message
+                                            </button>
+                                        </a>
+                                            <a href="{% url "remove_friend" friend.pk %}">
+                                            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                Remove
+                                            </button>
+                                        </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% else %}
+                    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+                        <div class="px-4 py-4 sm:px-6">
+                            <p class="text-gray-500">You have no friends yet.</p>
+                        </div>
+                    {% endif %}
+
+            
+            </div>
+        </main>
+    </div>
+</div>
+</div>
+
+{% endblock %}
