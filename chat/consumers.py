@@ -7,15 +7,39 @@ from django.utils import timezone
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
+    active_connections = {} 
     async def connect(self):
-
+        self.room_group_name = self.scope['url_route']['kwargs']['room_name']
         self.current_user = self.scope['user']
-        self.receiver_id = self.scope['url_route']['kwargs']['receiver_id']
 
-        user_ids = sorted([str(self.current_user.id), str(self.receiver_id)])
-        self.room_group_name = f"chat_{user_ids[0]}_{user_ids[1]}"
 
-        self.other_user_id = self.receiver_id
+        parts = self.room_group_name.split('_')
+        if len(parts) == 3:
+            try:
+                user_id1 = int(parts[1])
+                user_id2 = int(parts[2])
+            except ValueError:
+            
+                await self.close()
+                return
+
+            
+            if self.current_user.id == user_id1:
+                self.receiver_id = user_id2
+            elif self.current_user.id == user_id2:
+                self.receiver_id = user_id1
+            else:
+                
+                await self.close()
+                return
+        else:
+    
+            await self.close()
+            return
+        
+        if self.room_group_name not in self.active_connections:
+            self.active_connections[self.room_group_name] = set()
+        self.active_connections[self.room_group_name].add(self.channel_name)
 
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -26,7 +50,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def disconnect(self, code):
-        # Leave room group
+
+        if self.room_group_name in self.active_connections:
+            self.active_connections[self.room_group_name].discard(self.channel_name)
+            if not self.active_connections[self.room_group_name]:
+                del self.active_connections[self.room_group_name]  #
+        
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -39,32 +68,48 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             text_data_json = json.loads(text_data)
-            message = text_data_json['message']
-
-            # Save message to database
-            new_message = await self.save_message(
-                sender_id=self.current_user.id,
-                receiver_id=self.receiver_id,
-                message=message
-            )
-
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'chat_message',
-                    'message': message,
-                    'sender_id': self.current_user.id,
-                    'timestamp': new_message.timestamp.strftime("%H:%M %p"),
-                }
-            )
+            message = text_data_json.get('message')
+            if not message:
+                raise ValueError("Message key is missing or empty")
+            if len(message) > 1000:
+                raise ValueError("Message is too long")
+        except json.JSONDecodeError:
+            await self.send(text_data=json.dumps({
+                'error': 'Invalid JSON format.'
+            }))
+            return
+        except ValueError as e:
+            await self.send(text_data=json.dumps({
+                'error': str(e)
+            }))
+            return
         except Exception as e:
             print(f"Error: {e}")
             await self.send(text_data=json.dumps({
                 'error': 'Failed to process the message.'
             }))
+            return
+
+        new_message = await self.save_message(
+            sender_id=self.current_user.id,
+            receiver_id=self.receiver_id,
+            message=message
+        )
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'message': message,
+                'sender_id': self.current_user.id,
+                'timestamp': new_message.timestamp.strftime("%H:%M %p"),
+            }
+        )
+
 
     @sync_to_async
     def save_message(self, sender_id, receiver_id, message):
+        print(f"Sending to to: {len(self.active_connections[self.room_group_name])} connections")  # Debugging
         return Message.objects.create(
             sender_id=sender_id,
             receiver_id = receiver_id,
@@ -76,6 +121,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def chat_message(self, event):
+        print(f"Sending message: {event['message']} from {event['sender_id']}")
         await self.send(text_data=json.dumps({
             'message': event['message'],
             'sender_id': event['sender_id'],
