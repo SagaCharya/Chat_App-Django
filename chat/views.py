@@ -11,7 +11,7 @@ from user.models import CustomUser
 from user.tasks import send_password_change_email
 import uuid
 from django.core.exceptions import ObjectDoesNotExist
-
+from .utils.decorators import active_profile_required
 
 
 
@@ -40,16 +40,11 @@ def change_password_btn(request):
         return redirect('user_profile')
     
 
-
+@active_profile_required
 def home(request):
-    if request.user.profile.is_active is False:
-        return redirect('profile')
-    else:
         return render(request, 'home.html')
 
 
-        form = RegisterForm()
-    return render(request, 'register.html', {'form': form})
 
 @login_required
 def profile(request):
@@ -74,18 +69,14 @@ def user_profile(request):
 
 
 @login_required
+@active_profile_required
 def friends_list(request):
-    if request.user.profile.is_active is False:
-        return redirect('profile')
-    else:
         frineds = request.user.friends.all()
         return render(request, 'friend.html', {'friends': frineds})
 
 @login_required
+@active_profile_required
 def friends_request(request):
-    if request.user.profile.is_active is False:
-        return redirect('profile')
-    else:
         pending_requests = FriendRequest.objects.filter(to_user=request.user, accepted=False)
         return render(request, 'friend_req.html', {'pending_requests': pending_requests})
 
@@ -99,10 +90,8 @@ def search_users(request):
             return render(request, 'search_user.html')
 
 @login_required
+@active_profile_required
 def send_friend_request(request, user_id):
-    if request.user.profile.is_active is False:
-        return redirect('profile')
-    else:
         to_user = CustomUser.objects.get(id=user_id)
         FriendRequest.objects.create(from_user=request.user, to_user=to_user)
         return redirect('friends')
@@ -160,18 +149,24 @@ def recent_chats(request):
         'message_times': message_times}
         )
 
-
+@login_required
+@active_profile_required
 def chat_detail(request, user_id):
-    if request.user.profile.is_active is False:
-        return redirect('profile')
-    else:
-        chat_user = get_object_or_404(CustomUser, id=user_id)
-        messages = Message.objects.filter(
+ 
+    chat_user = get_object_or_404(CustomUser, id=user_id)
+    messages = Message.objects.filter(
             (Q(sender=request.user, receiver=chat_user) | Q(sender=chat_user, receiver=request.user))
         ).order_by("timestamp")
 
-        return render(request, "chat_window.html", {"chat_user": chat_user, "messages": messages})
-
-
+    context = {
+        "chat_user": chat_user,
+        "messages": messages,
+    }
+    
+    if request.headers.get("HX-Request"):
+        return render(request, "chat_window.html", context)
+    else:
+        context.update(recent_chats(request))
+        return render(request, "home.html", context)
 
     
