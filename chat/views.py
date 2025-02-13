@@ -12,6 +12,7 @@ from user.tasks import send_password_change_email
 import uuid
 from django.core.exceptions import ObjectDoesNotExist
 from .utils.decorators import active_profile_required
+from django.contrib import messages
 
 
 
@@ -31,9 +32,9 @@ def change_password_btn(request):
 
         # Send the password change email via Celery
         send_password_change_email.delay(user.email, verification_link)
-
+        messages.success(request, 'Verification for the password Change has been sent to your email')
         # Render the success page
-        return render(request, 'pass.html')
+        return redirect('user_profile')
 
     except Exception as e:
         print(e)

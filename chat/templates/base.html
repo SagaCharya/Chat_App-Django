@@ -18,14 +18,45 @@
         }
     }
 </script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 </head>
 <body>
+
     {% include "nav/nav.html" %}
+    {% if messages %}
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2">
+        {% for message in messages %}
+            <div class="toast bg-white shadow-lg rounded-lg p-4 flex items-start space-x-4 border border-gray-200 transition-opacity opacity-100">
+                <div class="w-6 h-6 size-12">
+                    <i class="fa-duotone fa-solid fa-bell"></i>
+                    </div>
+                <div class="flex-1">
+                    <strong class="text-gray-800">Notification</strong>
+                    <p class="text-sm text-gray-600">{{ message }}</p>
+                </div>
+                <button onclick="removeToast(this)" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% block content %}
     
     
     {% endblock  %}
+    <script>
+        function removeToast(element) {
+            const toast = element.closest('.toast');
+            toast.classList.add('opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll('.toast').forEach(toast => {
+                setTimeout(() => removeToast(toast), 5000);
+            });
+        });
+    </script>
 
 </body>
 </html>

@@ -4,13 +4,12 @@ from django.shortcuts import render, redirect
 from .forms import RegisterForm, LoginForm
 from django.contrib.auth import authenticate, login, logout
 from .models import CustomUser
-from django.core.mail import send_mail
 from django.conf import settings
 import uuid
 from django.utils import timezone
 from .tasks import send_verification_email
-from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib import messages
 
 
 # Create your views here.
@@ -19,15 +18,7 @@ def index(request):
     return render(request, 'index.html')
 
 
-# def user_register(request):
-#     if request.method == 'POST':
-#         form = RegisterForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('login')
-#     else:
-#         form = RegisterForm()
-#     return render(request, 'register.html', {'form': form})
+
 def user_register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -41,7 +32,8 @@ def user_register(request):
             verification_link = f"http://127.0.0.1:8000/verify/{user.verification_token}/"
 
             send_verification_email.delay(user.email, verification_link)
-            return render(request, 'verify_email.html')
+            messages.success(request, "Verify your email to login")
+            return redirect(index)
     else:
         form = RegisterForm()
     return render(request, 'register.html', {'form': form})
@@ -56,8 +48,9 @@ def verify_email(request, token):
             user.save()
             return redirect('login')
         else:
-            # token expires  
-            return render(request,'verifiy.html')
+            # token expires
+            messages.success(request, 'Token expired')  
+            return redirect('index')
     except CustomUser.DoesNotExist:
         return redirect('index')
     
@@ -72,6 +65,7 @@ def verify_token(request, token):
                     form.save()
                     user.verification_token = None  # Clear the token
                     user.save()
+                    messages.success(request, 'Password Change Successfully, Please Login')
                     return redirect('login')
             else:
                 form = PasswordChangeForm(user)
@@ -79,7 +73,8 @@ def verify_token(request, token):
             return render(request, 'change_password.html',{'form':form})
         
             # token expires  
-        return render(request,'verifiy.html')
+        messages.success(request, 'token expired')
+        return redirect('index')
     except CustomUser.DoesNotExist:
         return redirect('index')
     
@@ -94,10 +89,14 @@ def user_login(request):
             if user is not None:
                 if user.is_verified is not False:
                     login(request, user)
+                    messages.success(request, 'You are logged In')
                     return redirect('home')
                 else:
-                    return render(request, 'verify_email.html')
-    else:
+                    messages.success(request, 'Verify your email to login')
+                    return redirect('login')
+            else:
+                messages.error(request, 'Invalid username or password') 
+
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
 
