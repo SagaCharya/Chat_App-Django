@@ -49,7 +49,7 @@ def verify_email(request, token):
             return redirect('login')
         else:
             # token expires
-            messages.success(request, 'Token expired')  
+            messages.success(request,'Token expired')  
             return redirect('index')
     except CustomUser.DoesNotExist:
         return redirect('index')
@@ -70,10 +70,10 @@ def verify_token(request, token):
             else:
                 form = PasswordChangeForm(user)
             
-            return render(request, 'change_password.html',{'form':form})
+            return render(request,'change_password.html',{'form':form})
         
             # token expires  
-        messages.success(request, 'token expired')
+        messages.success(request,'token expired')
         return redirect('index')
     except CustomUser.DoesNotExist:
         return redirect('index')
