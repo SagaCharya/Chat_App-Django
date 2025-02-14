@@ -11,11 +11,11 @@
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto p-6" >
         <div id="chat-container">
-            <form hx-get="{% url 'search_users' %}" hx-target="#swap-item" hx-swap="outerHTML" hx-trigger="submit">
+            <form hx-get="{% url 'search_users' %}" hx-target="#swap-item" hx-swap="innerHTML" hx-trigger="submit">
                 <div class="p-3 flex items-center">
                     <input type="text" placeholder="Search Users" name="q" class="w-2/3 p-2 m-3 bg-gray-100 rounded-md border border-black">
                     <a href="{% url 'search_users' %}">
-                    <button type='submit' class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <button type="submit" class="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Search
                     </button>
                 </a>

@@ -97,7 +97,7 @@ def user_login(request):
             else:
                 messages.error(request, 'Invalid username or password') 
 
-        form = LoginForm()
+    form = LoginForm()
     return render(request, 'login.html', {'form': form})
 
 
