@@ -1,4 +1,4 @@
-{% load custom_filters %} {% block content %}
+{% load custom_filters %}
 
 <div id="chat-window" class="flex-1 flex flex-col h-screen">
   <!-- Chat Header -->
@@ -14,12 +14,12 @@
   {% else %}
   <div class="p-4 bg-gray-100 flex items-center border-b">WELCOME!</div>
   {% endif %}
-  <!-- Chat Messages (Scrollable) -->
+
   <div
     id="messages-container"
     class="flex-1 min-h-0 overflow-y-auto p-4 bg-whatsapp-light bg-opacity-30"
   >
-    {% for message in messages %} {% if message.sender == request.user %}
+    {% for message in msg %} {% if message.sender == request.user %}
 
     <div class="flex mb-4 justify-end">
       <div class="bg-whatsapp-light rounded-lg p-3 max-w-xs">
@@ -41,7 +41,6 @@
     {% endif %} {% endfor %}
   </div>
 
-  <!-- Message Input (Fixed at Bottom) -->
   <div class="p-4 bg-gray-100 sticky bottom-0">
     <form id="chat-form">
       {% csrf_token %}
@@ -65,8 +64,10 @@
   </div>
 </div>
 
+<!-- Add this script at the bottom of chat_window.html -->
 <script>
   (function () {
+    
     const senderId = "{{ request.user.id }}";
     const receiverId = "{{ chat_user.id }}";
 
@@ -98,6 +99,8 @@
     socket.onmessage = function (e) {
       const data = JSON.parse(e.data);
       console.log("Message received:", data);
+
+      htmx.ajax("GET", "{% url 'recent_chats_partial' %}", "#left-nav");
 
       // Create message container
       const messageContainer = document.createElement("div");
@@ -135,6 +138,8 @@
       // Add the message to the messages container
       messagesContainer.appendChild(messageContainer);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      
     };
 
     socket.onclose = function () {
@@ -157,6 +162,9 @@
             })
           );
           messageInput.value = "";
+
+          htmx.ajax("GET", "{% url 'recent_chats_partial' %}", "#left-nav");
+         
         }
       });
 
@@ -171,4 +179,3 @@
     };
   })();
 </script>
-{% endblock %}

@@ -2,40 +2,29 @@
 {% extends "base.html" %}
 {% load custom_filters %}
 {% block content %}
-
+{% include "nav/nav.html" %}
 <body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col"> 
   <div class="flex flex-1 overflow-hidden">
-  {% include "nav/left_nav.html" %}
+    
+   
+    <div class="w-1/4 bg-white border-r" >
+      {% include "nav/left_nav.html" %}
+    </div>
  
 
     
     
-    <div class="flex-1 flex flex-col">
-      <div id="chat-container" class="flex-1">
+    <main class="flex-1 flex flex-col">
+      <div id="chat-container" class="flex-1 flex flex-col h-screen">
         {% include "chat_window.html" %}  <!-- Initial empty state -->
       </div>
-    </div>
+    </main>
        
     
      
     </div>
   </div>
 </body>
-<script>
-  // Global WebSocket reference
-  let activeSocket = null;
 
 
-  document.addEventListener("htmx:afterSwap", function(event) {
-    if (event.detail.target.id === "chat-container") {
-      
-      if (activeSocket && activeSocket.readyState === WebSocket.OPEN) {
-        activeSocket.close();
-      }
-      
-      // Get the new socket instance from the loaded partial
-      activeSocket = document.querySelector("#chat-window").socket;
-    }
-  });
-</script>
 {% endblock %}

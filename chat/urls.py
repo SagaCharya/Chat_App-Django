@@ -13,6 +13,8 @@ urlpatterns = [
     path('chat_detail/<int:user_id>/', views.chat_detail, name='chat_detail'),
     path('profile/',views.profile, name='profile'),
     path('user_profile/',views.user_profile , name='user_profile' ),
-    path('change_password/',views.change_password_btn, name='change_password')
+    path('change_password/',views.change_password_btn, name='change_password'),
+    path('recent_chats_partial/',views.recent_chats_partial, name='recent_chats_partial'),
+    path('search_chats',views.search_chats, name='search_chats'),
 ]
 

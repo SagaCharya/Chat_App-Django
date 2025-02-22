@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from .forms import ProfileForm
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import FriendRequest,  Message
 from django.db.models import Q, OuterRef, Subquery
@@ -84,12 +83,14 @@ def friends_request(request):
 @login_required
 def search_users(request):
         query = request.GET.get('q')
+        user = request.user
         if query:
-            users = CustomUser.objects.filter(username__icontains=query).exclude(id=request.user.id)
+            friends = user.friends.all()
+            users = CustomUser.objects.filter(username__icontains=query).exclude(id=request.user.id).exclude(friends__in=friends)
             return render(request, 'search_user.html', {'users': users}) 
         else:
-            return render(request, 'search_user.html')
-
+            user = CustomUser.objects.none()
+        
 @login_required
 @active_profile_required
 def send_friend_request(request, user_id):
@@ -161,7 +162,7 @@ def chat_detail(request, user_id):
 
     context = {
         "chat_user": chat_user,
-        "messages": messages,
+        "msg": messages,
     }
     
     if request.headers.get("HX-Request"):
@@ -170,4 +171,25 @@ def chat_detail(request, user_id):
         context.update(recent_chats(request))
         return render(request, "home.html", context)
 
-    
+@login_required
+def recent_chats_partial(request):
+    context = recent_chats(request)  # Get updated chat data
+    return render(request, "nav/left_nav.html", context)
+
+
+
+@login_required
+def search_chats(request):
+    query = request.GET.get('q', '').strip()
+
+    # Get all users the logged-in user has chatted with
+    chat_users = CustomUser.objects.filter(
+        Q(sent_messages__receiver=request.user) | 
+        Q(received_messages__sender=request.user)
+    ).distinct()
+
+    # Filter based on search query
+    if query:
+        chat_users = chat_users.filter(username__icontains=query)
+
+    return render(request, 'nav/chat_list.html', {'chat_users': chat_users})

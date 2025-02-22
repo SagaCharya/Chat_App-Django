@@ -11,21 +11,32 @@
                 
                 
                 <div class="flex items-center space-x-4">
-                    <a href="{% url "home" %}">
-                        <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900">
+                        <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900"
+                        hx-get="{% url 'chat_detail' chat_users.0.pk %}" 
+                        hx-target="#chat-container" 
+                        hx-push-url="true"
+                        >
                             Messages
                         </button>
-                    </a>
-                    <a href="{% url "friends" %}">
-                    <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900" onclick="showFriends()">
+            
+                    <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900" onclick="showFriends()"
+                    hx-get="{% url 'friends' %}" 
+                    hx-target="#chat-container" 
+                    hx-push-url="true"
+
+                    >
                         Friends
                     </button>
-                </a>
-                <a href="{% url "friend_request" %}">
-                    <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900" onclick="showRequests()">
+                
+    
+                    <button 
+                    class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900"
+                    hx-get="{% url 'friend_request' %}" 
+                    hx-target="#chat-container" 
+                    hx-push-url="true">
                         Requests
                     </button>
-                </a>
+                
                     <a href="{% url "logout" %}">
                     <button class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-900">
                         Logout
