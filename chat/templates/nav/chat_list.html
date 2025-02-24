@@ -1,0 +1,20 @@
+{% load custom_filters %}
+{% for user in chat_users %}
+    <div class="flex items-center p-3 hover:bg-gray-100 cursor-pointer"
+         hx-get="{% url 'chat_detail' user.id %}"
+         hx-target="#chat-container"
+         hx-push-url="true">
+        <img class="h-12 w-12 rounded-full mr-3" src="{{ user.profile.profile_pic.url }}" alt="Friend's avatar" />
+        <div class="flex-1">
+            <h3 class="font-semibold">{{ user.username }}</h3>
+            <p class="text-sm text-gray-600 truncate">
+                {{ last_messages|get_item:user|truncatewords:5 }}
+            </p>
+        </div>
+        <span class="text-xs text-gray-500">
+            {{ message_times|get_item:user|date:"H:i A" }}
+        </span>
+    </div>
+{% empty %}
+    <p class="text-gray-500 p-4">No chats found</p>
+{% endfor %}
