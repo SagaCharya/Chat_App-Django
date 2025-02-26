@@ -39,7 +39,7 @@ A real-time chat application built with **Django**, **Django Channels**, and **H
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/chat-app.git
+   git clone https://github.com/SagaCharya/Chat_App-Django.git
    cd chat-app
 2. Create a Virtual Environment
     ```bash
@@ -68,11 +68,11 @@ A real-time chat application built with **Django**, **Django Channels**, and **H
 Here are some screenshots of the application in action:
 
 ### Chat Interface
-![Screenshot 2025-02-26 211833](https://github.com/user-attachments/assets/ad633016-83b8-4c06-83c0-b756561ba595)
+![Chat Interface](https://github.com/user-attachments/assets/ad633016-83b8-4c06-83c0-b756561ba595)
 
 
 ### User Profile
-![Screenshot 2025-02-26 211900](https://github.com/user-attachments/assets/4923a79e-14e0-4de8-aafb-c4b0b4d1def8)
+![User Profile](https://github.com/user-attachments/assets/4923a79e-14e0-4de8-aafb-c4b0b4d1def8)
 
 
 > *Note: Screenshots are for illustration purposes. Actual UI might vary based on the current implementation.*  
