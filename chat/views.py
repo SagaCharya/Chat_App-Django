@@ -1,6 +1,6 @@
 from datetime import timedelta
 from django.utils import timezone
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from .forms import ProfileForm
 from django.contrib.auth.decorators import login_required
@@ -12,6 +12,7 @@ import uuid
 from django.core.exceptions import ObjectDoesNotExist
 from .utils.decorators import active_profile_required
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 
 
 
@@ -41,6 +42,7 @@ def change_password_btn(request):
     
 
 @active_profile_required
+@login_required
 def home(request):
         return render(request, 'home.html')
 
@@ -137,7 +139,13 @@ def recent_chats(request):
 
         # If we haven't seen a message from this user yet, or the current message is more recent, update
         if other_user not in last_messages:
-            last_messages[other_user] = msg.content
+            if msg.file and not msg.content.strip():
+                 if msg.file.url.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg')):
+                    last_messages[other_user] = "📷 Image"
+                 else:
+                    last_messages[other_user] = "📎 File "
+            else:
+                last_messages[other_user] = msg.content
             message_times[other_user] = msg.timestamp
 
           
@@ -193,3 +201,31 @@ def search_chats(request):
         chat_users = chat_users.filter(username__icontains=query)
 
     return render(request, 'nav/chat_list.html', {'chat_users': chat_users})
+
+
+@login_required
+def upload_file(request):
+    if request.method == 'POST':
+        if not request.FILES.get('file'):
+            return JsonResponse({"error": "No file uploaded"}, status=400)
+
+        file = request.FILES["file"]
+        receiver_id = request.POST.get("receiver_id")
+
+        # Fetch receiver instance properly
+        receiver = get_object_or_404(CustomUser, id=receiver_id)
+
+        # Create message with correct receiver type
+        message_instance = Message.objects.create(
+            sender=request.user,
+            receiver=receiver,  # ✅ Corrected: Use CustomUser instance, not just an ID
+            content='',
+            file=file
+        )
+
+        return render(request, 'part/file_preview.html', {
+            'file_url': message_instance.file.url,
+            'file_name': file.name
+        })
+
+    return JsonResponse({"error": "Invalid request"}, status=400)

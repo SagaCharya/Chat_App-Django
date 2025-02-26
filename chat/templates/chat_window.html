@@ -17,31 +17,69 @@
 
   <div
     id="messages-container"
-    class="flex-1 min-h-0 overflow-y-auto p-4 bg-whatsapp-light bg-opacity-30"
+    class="flex-1 min-h-0 overflow-y-auto p-4 bg-stone-200 bg-opacity-10"
   >
     {% for message in msg %} {% if message.sender == request.user %}
 
     <div class="flex mb-4 justify-end">
-      <div class="bg-whatsapp-light rounded-lg p-3 max-w-xs">
-        <p class="text-sm">{{ message.content }}</p>
-        <span class="text-xs text-gray-500 mt-1 block"
-          >{{ message.timestamp|date:"H:i A" }}</span
-        >
+      <div class=" rounded-lg p-3 max-w-xs text-right"> 
+        {% if message.file %}
+          <!-- Display file -->
+          {% if message.file.url|lower|slice:"-4:" == ".pdf" %}
+            <a href="{{ message.file.url }}" target="_blank">Download PDF</a>
+          {% elif message.file.url|lower|slice:"-5:" == ".docx" or message.file.url|lower|slice:"-4:" == ".doc" %}
+            <a href="{{ message.file.url }}" target="_blank">Download Word Document</a>
+          {% elif message.file.url|lower|slice:"-4:" == ".png" or message.file.url|lower|slice:"-4:" == ".jpg" or message.file.url|lower|slice:"-5:" == ".jpeg" or message.file.url|lower|slice:"-4:" == ".gif" %}
+          <a href="{{ message.file.url }}" target="_blank">
+            <img src="{{ message.file.url }}" alt="{{ message.file.name }}" class="h-3/4 w-9/10 max-w-[250px] cursor-pointer border rounded-lg ml-auto"/>
+          </a>
+          {% else %}
+            <a href="{{ message.file.url }}" target="_blank">Download File</a>
+          {% endif %}
+        {% endif %}
+        <!-- Display message text -->
+        {% if message.content %}
+          <p class="text-sm">{{ message.content }}</p>
+        {% endif %}
+        <!-- Display timestamp -->
+        <span class="text-xs text-gray-500 mt-1 block">{{ message.timestamp|date:"H:i A" }}</span>
       </div>
     </div>
-    {% else %}
+  {% else %}
+    <!-- Sent by the other user -->
     <div class="flex mb-4">
-      <div class="bg-white rounded-lg p-3 max-w-xs">
-        <p class="text-sm">{{ message.content }}</p>
-        <span class="text-xs text-gray-500 mt-1 block"
-          >{{ message.timestamp|date:"H:i A" }}</span
-        >
+      <div class="rounded-lg p-3 max-w-xs">
+        {% if message.file %}
+          <!-- Display file -->
+          {% if message.file.url|lower|slice:"-4:" == ".pdf" %}
+            <a href="{{ message.file.url }}" target="_blank">Download PDF</a>
+            <p>{{ message.file.name|get_file_name }}</p>
+
+          {% elif message.file.url|lower|slice:"-5:" == ".docx" or message.file.url|lower|slice:"-4:" == ".doc" %}
+            <a href="{{ message.file.url }}" target="_blank">Download Word Document</a>
+            <p class="text-sm text-blue-500">{{ message.file.name|get_file_name }}</p>
+            {% elif message.file.url|lower|slice:"-4:" == ".png" or message.file.url|lower|slice:"-4:" == ".jpg" or message.file.url|lower|slice:"-5:" == ".jpeg" or message.file.url|lower|slice:"-4:" == ".gif" %}
+            <a href="{{ message.file.url }}" target="_blank">
+              <img src="{{ message.file.url }}" alt="{{ message.file.name }}" class="h-3/4 w-9/10 max-w-[250px] cursor-pointer border rounded-lg mr-auto"/>
+            </a>
+          {% else %}
+            <a href="{{ message.file.url }}" target="_blank">Download File</a>
+          {% endif %}
+        {% endif %}
+        <!-- Display message text -->
+        {% if message.content %}
+          <p class="text-sm">{{ message.content }}</p>
+        {% endif %}
+        <!-- Display timestamp -->
+        <span class="text-xs text-gray-500 mt-1 block">{{ message.timestamp|date:"H:i A" }}</span>
       </div>
     </div>
-    {% endif %} {% endfor %}
-  </div>
+  {% endif %}
+{% endfor %}
+</div>>
 
-  <div class="p-4 bg-gray-100 sticky bottom-0">
+  <div class="p-4 bg-gray-100 sticky bottom-0 shadow-md shadow-black"> 
+    <div id="file-preview"></div>
     <form id="chat-form">
       {% csrf_token %}
       <div class="flex items-center">
@@ -52,10 +90,24 @@
           placeholder="Type a message"
           class="flex-1 p-2 rounded-full mr-2"
         />
+        <input
+  id="file-input"
+  type="file"
+  name="file"
+  class="hidden"
+  hx-post="{% url 'upload_file' %}"
+  hx-encoding="multipart/form-data"
+  hx-include="[name='receiver_id']"
+  hx-target="#file-preview"
+  hx-trigger="change"
+  hx-swap="beforeend"
+/>
+<label for="file-input" class="cursor-pointer text-blue-500 mr-5">📎 Attach</label>
+        <input type="hidden" name="receiver_id" value="{{ chat_user.id }}" />
         <button
           id="send-button"
           type="submit"
-          class="bg-whatsapp text-white p-2 rounded-full"
+          class="bg-blue-600 hover:bg-blue-400 px-8  text-white p-2 rounded-full"
         >
           Send
         </button>
@@ -66,116 +118,183 @@
 
 <!-- Add this script at the bottom of chat_window.html -->
 <script>
-  (function () {
-    
-    const senderId = "{{ request.user.id }}";
-    const receiverId = "{{ chat_user.id }}";
+    (function () {
 
-    const sortedIds = [senderId, receiverId].sort();
-    const roomName = `chat_${sortedIds[0]}_${sortedIds[1]}`;
-    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+      const senderId = "{{ request.user.id }}";
+      const receiverId = "{{ chat_user.id }}";
 
-    // Create new WebSocket instance
-    const socket = new WebSocket(
-      `${protocol}://${window.location.host}/ws/${roomName}/`
-    );
+      const sortedIds = [senderId, receiverId].sort();
+      const roomName = `chat_${sortedIds[0]}_${sortedIds[1]}`;
+      const protocol = window.location.protocol === "https:" ? "wss" : "ws";
 
-    window.chatSocket = socket;
-
-    // Expose socket to parent if needed
-    document.currentScript.parentElement.socket = socket;
-
-    // Cache the DOM elements for reuse
-    const messageInput = document.getElementById("message-input");
-    const sendButton = document.getElementById("send-button");
-    const messagesContainer = document.getElementById("messages-container");
-
-    // Set input listener only once
-    messageInput.addEventListener("input", () => {
-      sendButton.disabled = messageInput.value.trim() === "";
-    });
-
-    // WebSocket event handlers
-    socket.onmessage = function (e) {
-      const data = JSON.parse(e.data);
-      console.log("Message received:", data);
-
-      htmx.ajax("GET", "{% url 'recent_chats_partial' %}", "#left-nav");
-
-      // Create message container
-      const messageContainer = document.createElement("div");
-      messageContainer.classList.add("flex", "mb-4");
-
-      // Align message to the right if sent by the current user
-      if (data.sender_id == senderId) {
-        messageContainer.classList.add("justify-end");
-      }
-
-      // Create message content
-      const messageContent = document.createElement("div");
-      messageContent.classList.add(
-        data.sender_id == senderId ? "bg-whatsapp-light" : "bg-white",
-        "rounded-lg",
-        "p-3",
-        "max-w-xs"
+      // Create new WebSocket instance
+      const socket = new WebSocket(
+        `${protocol}://${window.location.host}/ws/${roomName}/`
       );
 
-      // Add message text
-      const messageText = document.createElement("p");
-      messageText.classList.add("text-sm");
-      messageText.innerText = data.message;
+      window.chatSocket = socket;
 
-      // Add timestamp
-      const timestamp = document.createElement("span");
-      timestamp.classList.add("text-xs", "text-gray-500", "mt-1", "block");
-      timestamp.innerText = data.timestamp;
+      // Expose socket to parent if needed
+      document.currentScript.parentElement.socket = socket;
 
-      // Append elements
-      messageContent.appendChild(messageText);
-      messageContent.appendChild(timestamp);
-      messageContainer.appendChild(messageContent);
+      // Cache the DOM elements for reuse
+      const messageInput = document.getElementById("message-input");
+      const sendButton = document.getElementById("send-button");
+      const messagesContainer = document.getElementById("messages-container");
 
-      // Add the message to the messages container
-      messagesContainer.appendChild(messageContainer);
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      function updateSendButtonState() {
+        const messageInput = document.getElementById("message-input");
+        const messageText = messageInput.value.trim();
+        const filePreviewElement = document.getElementById("file-preview");
+        const hasFile = filePreviewElement.innerHTML.trim() !== "";
 
-      
-    };
+        // Enable button if either text or file is present
+        document.getElementById("send-button").disabled = !messageText && !hasFile;
+      }
 
-    socket.onclose = function () {
-      console.log("WebSocket connection closed");
-    };
+      const fileObserver = new MutationObserver(updateSendButtonState);
+  fileObserver.observe(document.getElementById("file-preview"), { childList: true, subtree: true });
 
-    // Form submission handler
-    document
-      .getElementById("chat-form")
-      .addEventListener("submit", function (e) {
-        e.preventDefault();
-        const message = messageInput.value.trim();
 
-        if (message) {
-          socket.send(
-            JSON.stringify({
-              message: message,
-              sender_id: senderId,
-              receiver_id: receiverId,
-            })
-          );
-          messageInput.value = "";
+  document.getElementById("message-input").addEventListener("input", updateSendButtonState);
 
-          htmx.ajax("GET", "{% url 'recent_chats_partial' %}", "#left-nav");
-         
+  {% comment %} messageInput.addEventListener("input", updateSendButtonState); {% endcomment %}
+
+      // WebSocket event handlers
+      socket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        console.log("Message received:", data);
+
+        htmx.ajax("GET", "{% url 'recent_chats_partial' %}", "#left-nav");
+
+        // Create message container
+        const messageContainer = document.createElement("div");
+        messageContainer.classList.add("flex", "mb-4");
+        if (data.sender_id == senderId) {
+          messageContainer.classList.add("justify-end");
+        }
+
+        // Create message content
+        const messageContent = document.createElement("div");
+        messageContent.classList.add(
+          data.sender_id == senderId ? "bg-whatsapp-light" : "bg-white",
+          "rounded-lg",
+          "p-3",
+          "max-w-xs"
+        );
+        console.log(data.file_name);
+        if (data.file_url) {
+          let fileElement;
+        
+          // Check the file type based on the file URL extension
+          if (data.file_url.toLowerCase().endsWith('.pdf')) {
+            // Create a link for PDF files
+            fileElement = document.createElement('a');
+            fileElement.href = data.file_url;
+            fileElement.textContent = 'Download PDF';
+            fileElement.target = '_blank';  // Open in a new tab
+          } else if (data.file_url.toLowerCase().endsWith('.doc') || data.file_url.toLowerCase().endsWith('.docx')) {
+            // Create a link for Word documents
+            fileElement = document.createElement('a');
+            fileElement.href = data.file_url;
+            fileElement.textContent = 'Download Word Document';
+            fileElement.target = '_blank';  // Open in a new tab
+          } else if (data.file_url.toLowerCase().endsWith('.png') || data.file_url.toLowerCase().endsWith('.jpg') || data.file_url.toLowerCase().endsWith('.jpeg') || data.file_url.toLowerCase().endsWith('.gif')) {
+            // Create an image element for image files
+            fileElement = document.createElement('img');
+            fileElement.src = data.file_url;
+            fileElement.alt = 'Uploaded Image';
+            fileElement.style.maxWidth = '100%';
+          } else {
+            // Default behavior for other file types
+            fileElement = document.createElement('a');
+            fileElement.href = data.file_url;
+            fileElement.textContent = 'Download File';
+            fileElement.target = '_blank';  // Open in a new tab
+          }
+        
+          // Append the file element to the message content
+          messageContent.appendChild(fileElement);
+        }
+        // Also add any text message content
+        if (data.message) {
+          const messageText = document.createElement("p");
+          messageText.classList.add("text-sm");
+          messageText.innerText = data.message;
+          messageContent.appendChild(messageText);
+        }
+
+        // Add timestamp
+        const timestamp = document.createElement("span");
+        timestamp.classList.add("text-xs", "text-gray-500", "mt-1", "block");
+        timestamp.innerText = data.timestamp;
+
+        // Append elements
+        messageContent.appendChild(timestamp);
+        messageContainer.appendChild(messageContent);
+
+        // Add the message to the messages container
+        messagesContainer.appendChild(messageContainer);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+
+      };
+
+      socket.onclose = function () {
+        console.log("WebSocket connection closed");
+      };
+
+      document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'file-preview') {
+          // Enable the send button after a successful file upload
+          updateSendButtonState();
         }
       });
+      // Form submission handler
+       // Chat form submission: include both text and the file reference from the preview.
+      document.getElementById("chat-form").addEventListener("submit", function (e) {
+    e.preventDefault();
 
-    // Initial scroll to bottom (if needed)
-    if (messagesContainer) {
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    const messageInput = document.getElementById("message-input");
+    const messageText = messageInput.value.trim();
+    const fileInput = document.getElementById("file-input");
+
+    const filePreviewElement = document.getElementById("file-preview");
+    const fileUrlInput = filePreviewElement.querySelector("input[name='file_url']");
+    const file_url = fileUrlInput ? fileUrlInput.value : "";
+
+    if (messageText === "" && !file_url) {
+      console.log("Message must contain either text or a file.");
+      return;
     }
 
-    // Global error handler
-    socket.onerror = function (error) {
-      console.error("WebSocket Error:", error);
-    };
-  })();
+    window.chatSocket.send(JSON.stringify({
+      message: messageText,
+      sender_id: "{{ request.user.id }}",
+      receiver_id: "{{ chat_user.id }}",
+      file_url: file_url
+    }));
+
+    console.log("Sending message with file_url:", file_url);
+    // Clear input fields after sending
+    messageInput.value = "";
+    filePreviewElement.innerHTML = "";
+    fileInput.value = "";
+    updateSendButtonState();
+  });
+
+
+            htmx.ajax("GET", "{% url 'recent_chats_partial' %}", "#left-nav");
+
+
+      // Initial scroll to bottom (if needed)
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+
+      // Global error handler
+      socket.onerror = function (error) {
+        console.error("WebSocket Error:", error);
+      };
+    })();
 </script>

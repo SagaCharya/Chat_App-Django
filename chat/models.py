@@ -37,6 +37,19 @@ class FriendRequest(models.Model):
 class Message(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages')
     receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_messages')
-    content = models.TextField()
+    content = models.TextField(blank=True, null=True)
+    file = models.FileField(upload_to='chat_uploads/', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+
+    def file_type(self):
+        if self.file:
+            if self.file.name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                return 'image'
+            elif self.file.name.lower().endswith('.pdf'):
+                return 'pdf'
+            elif self.file.name.lower().endswith(('.doc', '.docx')):
+                return 'word'
+            else:
+                return 'other'
+        return None

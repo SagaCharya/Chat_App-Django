@@ -1,0 +1,18 @@
+<div>
+  {% if file_url %}
+    {% if file_name|lower|slice:"-4:" == ".pdf" %}
+      <a href="{{ file_url }}" target="_blank">{{ file_name }}</a>
+    {% elif file_name|lower|slice:"-5:" == ".docx" or file_name|lower|slice:"-4:" == ".doc" %}
+      <a href="{{ file_url }}" target="_blank">{{ file_name }}</a>
+    {% elif file_name|lower|slice:"-4:" == ".png" or file_name|lower|slice:"-4:" == ".jpg" or file_name|lower|slice:"-5:" == ".jpeg" or file_name|lower|slice:"-4:" == ".gif" %}
+      <div style="max-width: 300px; max-height: 300px; overflow: hidden; border-radius: 8px;">
+        <img src="{{ file_url }}" alt="{{ file_name }}" style="width: 100%; height: auto; object-fit: cover;">
+      </div>
+      <p>{{ file_name }}</p>
+    {% else %}
+      <a href="{{ file_url }}" target="_blank">{{ file_name }}</a>
+    {% endif %}
+    <input type="hidden" name="file_url" value="{{ file_url }}">
+    <input type="hidden" name="file_name" value="{{ file_name }}">
+  {% endif %}
+</div>

@@ -16,5 +16,6 @@ urlpatterns = [
     path('change_password/',views.change_password_btn, name='change_password'),
     path('recent_chats_partial/',views.recent_chats_partial, name='recent_chats_partial'),
     path('search_chats',views.search_chats, name='search_chats'),
+    path('upload_file/',views.upload_file, name='upload_file'),
 ]
 

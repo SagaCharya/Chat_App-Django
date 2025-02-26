@@ -51,7 +51,17 @@
       <div class="flex-1">
         <h3 class="font-semibold">{{ user.username }}</h3>
         <p class="text-sm text-gray-600 truncate">
-          {{ last_messages|get_item:user|truncatewords:5 }}
+          {% with msg=last_messages|get_item:user %}
+            {% if msg.file %}
+              {% if msg.file.url|lower|slice:"-4:" == ".jpg" or msg.file.url|lower|slice:"-5:" == ".jpeg" or msg.file.url|lower|slice:"-4:" == ".png" or msg.file.url|lower|slice:"-4:" == ".gif" %}
+                📷 Image received
+              {% else %}
+                📎 File received
+              {% endif %}
+            {% else %}
+              {{ msg|truncatewords:5 }}
+            {% endif %}
+          {% endwith %}
         </p>
       </div>
       <span class="text-xs text-gray-500">

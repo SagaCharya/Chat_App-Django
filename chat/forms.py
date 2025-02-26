@@ -11,5 +11,7 @@ class ProfileForm(ModelForm):
         model = UserProfile
         fields = ["profile_pic", "bio"]
 
+class FileUploadForm(forms.Form):
+    file = forms.FileField()
     
     
