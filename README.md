@@ -1,4 +1,4 @@
-# Real-Time Django Chat Application
+# FriendsConnect
 
 A real-time chat application built with **Django**, **Django Channels**, and **HTMX**. This app supports live messaging, media uploads and dynamic user interfaces.
 
