@@ -19,9 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 @login_required
 def change_password_btn(request):
     try:
-        # Get the logged-in user
         user = request.user
-        print(user)
         # Generate a unique verification token
         user.verification_token = uuid.uuid4().hex
         user.token_created_at = timezone.now()
@@ -29,8 +27,7 @@ def change_password_btn(request):
 
         # Create the verification link
         verification_link = f"http://127.0.0.1:8000/password_change/{user.verification_token}/"
-
-        # Send the password change email via Celery
+        
         send_password_change_email.delay(user.email, verification_link)
         messages.success(request, 'Verification for the password Change has been sent to your email')
         # Render the success page
@@ -125,7 +122,7 @@ def recent_chats(request):
     recent_messages = Message.objects.filter(
         Q(sender=request.user) | Q(receiver=request.user)
     ).filter(
-        id__in=Subquery(last_messages_subquery)  # Get the most recent message for each pair
+        id__in=Subquery(last_messages_subquery)  
     ).order_by('-timestamp')
     
     last_messages = {}
@@ -190,7 +187,6 @@ def recent_chats_partial(request):
 def search_chats(request):
     query = request.GET.get('q', '').strip()
 
-    # Get all users the logged-in user has chatted with
     chat_users = CustomUser.objects.filter(
         Q(sent_messages__receiver=request.user) | 
         Q(received_messages__sender=request.user)
@@ -215,10 +211,9 @@ def upload_file(request):
         # Fetch receiver instance properly
         receiver = get_object_or_404(CustomUser, id=receiver_id)
 
-        # Create message with correct receiver type
         message_instance = Message.objects.create(
             sender=request.user,
-            receiver=receiver,  # ✅ Corrected: Use CustomUser instance, not just an ID
+            receiver=receiver, 
             content='',
             file=file
         )

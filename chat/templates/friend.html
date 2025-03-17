@@ -6,7 +6,6 @@
     <div class="flex flex-1">
 
 
-        <!-- Main Content -->
         <main class="flex-1 overflow-y-auto p-6" >
         <div id="chat-container">
             <form hx-get="{% url 'search_users' %}" hx-target="#swap-item" hx-swap="innerHTML" hx-trigger="submit">
@@ -25,7 +24,7 @@
                 <h1 class="text-2xl font-semibold mb-6">
                     Your Friends
             </h1>
-                <!-- Friends List -->
+
                  {% if friends %}
                     <div class="bg-white shadow overflow-hidden sm:rounded-md">
                         <ul class="divide-y divide-gray-200">

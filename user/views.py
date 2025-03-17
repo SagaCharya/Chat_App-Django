@@ -63,7 +63,7 @@ def verify_token(request, token):
                 form = PasswordChangeForm(user, request.POST)
                 if form.is_valid():
                     form.save()
-                    user.verification_token = None  # Clear the token
+                    user.verification_token = None 
                     user.save()
                     messages.success(request, 'Password Change Successfully, Please Login')
                     return redirect('login')
