@@ -45,7 +45,7 @@
         const data = JSON.parse(e.data);
         console.log("Message received:", data);
 
-        htmx.ajax("GET", "{% url 'recent_chats_partial' %}", "#left-nav");
+        htmx.ajax("GET", window.RECENT_CHATS_URL, "#left-nav");
 
         // Create message container
         const messageContainer = document.createElement("div");
@@ -163,8 +163,7 @@
     updateSendButtonState();
   });
 
-
-            htmx.ajax("GET", "{% url 'recent_chats_partial' %}", "#left-nav");
+  htmx.ajax("GET", window.RECENT_CHATS_URL, "#left-nav");
 
 
       // Initial scroll to bottom (if needed)

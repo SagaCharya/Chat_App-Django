@@ -3,8 +3,11 @@
 <script>
   window.SENDER_ID = "{{ request.user.id }}";
   window.RECEIVER_ID = "{{ chat_user.id }}";
+  window.RECENT_CHATS_URL = "{% url 'recent_chats_partial' %}";
 </script>
-<script src="{% static 'web_soocket.js' %}"></script>
+<script src="{% static 'web_soocket.js' %}">
+  
+</script>
 
 <div id="chat-window" class="flex-1 flex flex-col h-screen">
   <!-- Chat Header -->
